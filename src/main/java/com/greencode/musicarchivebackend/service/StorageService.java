@@ -28,7 +28,7 @@ public class StorageService {
         File fileObject = convertMultiPartFileToFile(file);
         s3Client.putObject(new PutObjectRequest(bucketName, fileName,fileObject ));
         fileObject.delete();
-        return "File uploaded : " + fileName;
+        return getFileUrl(fileName, bucketName);
     }
 
     public byte[] downloadFile(String fileName) {
@@ -48,7 +48,7 @@ public class StorageService {
         return fileName + " removed ...";
     }
 
-    private File convertMultiPartFileToFile(MultipartFile file) {
+    public File convertMultiPartFileToFile(MultipartFile file) {
         File convertedFile = new File(file.getOriginalFilename());
         try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
             fos.write(file.getBytes());
@@ -64,6 +64,10 @@ public class StorageService {
         List<S3ObjectSummary> objects = result.getObjectSummaries();
 
         return objects.stream().map(S3ObjectSummary::getKey).collect(Collectors.toList());
+    }
+
+    public String getFileUrl(String fileName, String bucketName) {
+        return "https://" + bucketName + ".s3.amazonaws.com/" + fileName;
     }
 
 }

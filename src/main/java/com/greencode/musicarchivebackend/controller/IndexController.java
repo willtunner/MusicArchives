@@ -3,7 +3,9 @@ package com.greencode.musicarchivebackend.controller;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.greencode.musicarchivebackend.service.MongoService;
 import com.greencode.musicarchivebackend.service.StorageService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -20,10 +22,13 @@ import java.util.Date;
 import java.util.List;
 
 @Controller
+@Tag(name = "User Controller", description = "Operations related to user management")
 public class IndexController {
     private final StorageService storageService;
     @Autowired
     private AmazonS3 amazonS3;
+    @Autowired
+    private MongoService mongoService;
 
     @Autowired
     public IndexController(StorageService storageService) {
@@ -32,18 +37,16 @@ public class IndexController {
 
     @GetMapping("home")
     public String getHomepage(Model model) {
-        // Define a data de expiração para o link prescrito
-        Date expiration = new Date(System.currentTimeMillis() + 3600000); // Expira em 1 hora
+        int oneHour = 3600000;
+        Date expiration = new Date(System.currentTimeMillis() + oneHour);
         List<String> urlSongs = new ArrayList<>();
         List<String> fileNames = storageService.getSongFileNames();
         List<ObjectIndex> objectIndexList = new ArrayList<>();
 
         fileNames.forEach(s -> {
-            // Cria uma solicitação para gerar o URL prescrito
           GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest("musicarchives", s)
                     .withMethod(HttpMethod.GET)
                     .withExpiration(expiration);
-            // Gera o URL prescrito
             URL presignedUrl = amazonS3.generatePresignedUrl(generatePresignedUrlRequest);
             System.out.println(presignedUrl);
             urlSongs.add(presignedUrl.toString());
@@ -52,6 +55,8 @@ public class IndexController {
         if (fileNames.size() == urlSongs.size()) {
             for (int i =0; i < fileNames.size(); i++) {
                 ObjectIndex objectIndex = new ObjectIndex();
+                String nameRefactor = fileNames.get(i).substring(fileNames.get(i).indexOf("_") + 1, fileNames.get(i).lastIndexOf("."));
+                objectIndex.setFileNameRefactor(nameRefactor);
                 objectIndex.setFileName(fileNames.get(i));
                 objectIndex.setUrlSong(urlSongs.get(i));
                 objectIndexList.add(objectIndex);
@@ -67,13 +72,20 @@ public class IndexController {
         return "login";
     }
 
-    @PostMapping
+    @PostMapping("/home/delete")
+    public String deleteFileHome(@RequestParam("delete") String fileName) {
+        if (fileName != null && !fileName.isEmpty()) storageService.deleteFile(fileName);
+        return "redirect:/home";
+    }
+
+    @PostMapping("/home")
     public String handleFileUpload(@RequestParam("file")MultipartFile file) {
         if (!file.getContentType().startsWith("audio/")) {
             throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
                     "O arquivo fornecido não é um tipo de áudio suportado.");
         }
-        storageService.uploadFile(file);
+        String urlSong = storageService.uploadFile(file);
+        mongoService.saveSongMongo(urlSong, file);
         return "redirect:/home";
     }
 
@@ -83,9 +95,17 @@ public class IndexController {
 
 class ObjectIndex {
     private String fileName;
+
+    private String fileNameRefactor;
     private String urlSong;
 
-    // Getters e setters
+    public String getFileNameRefactor() {
+        return fileNameRefactor;
+    }
+
+    public void setFileNameRefactor(String fileNameRefactor) {
+        this.fileNameRefactor = fileNameRefactor;
+    }
 
     public String getFileName() {
         return fileName;

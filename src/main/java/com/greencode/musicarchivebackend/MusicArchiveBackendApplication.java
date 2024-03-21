@@ -10,5 +10,4 @@ public class MusicArchiveBackendApplication {
 		SpringApplication.run(MusicArchiveBackendApplication.class, args);
 		System.out.println("Iniciou!!!");
 	}
-	// https://www.youtube.com/watch?v=vY7c7k8xmKE&ab_channel=JavaTechie Para configurar bucket S3
 }

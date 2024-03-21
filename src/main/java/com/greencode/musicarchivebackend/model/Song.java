@@ -14,6 +14,8 @@ public class Song {
     private String fileName;
     private String title;
     private String artist;
+    private String duration;
+    private String urlSong;
     private boolean isFavorited = false;
 
 }
