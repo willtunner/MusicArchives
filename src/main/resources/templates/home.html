@@ -24,8 +24,19 @@
         return true; // Envie o formulário se a validação passar
     }
 
+
+
   </script>
 
+  <script>
+    function openModal() {
+      // Seleciona a modal pelo ID
+      var modal = document.getElementById('myModal');
+
+      // Define o estilo display da modal como "block" para mostrá-la
+      modal.style.display = "block";
+  }
+  </script>
 </head>
 
 <body class="bg-gray-800">
@@ -82,7 +93,7 @@
         <div class="flex justify-center">
           <!-- Ícone do Olho usando Feather Icons -->
           <div style="width: 50px" class="flex justify-center bg-white-200 hover:bg-green-200 transition-colors
-                duration-300 ease-in-out cursor-pointer rounded-lg">
+                duration-300 ease-in-out cursor-pointer rounded-lg" onclick="openModal()">
             <svg fill="#000000" height="30px" width="30px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                  viewBox="0 0 42 42" enable-background="new 0 0 42 42" xml:space="preserve">
             <path d="M15.3,20.1c0,3.1,2.6,5.7,5.7,5.7s5.7-2.6,5.7-5.7s-2.6-5.7-5.7-5.7S15.3,17,15.3,20.1z M23.4,32.4
@@ -96,5 +107,46 @@
     </tbody>
   </table>
 </div>
+
+<div id="myModal" class="modal hidden fixed inset-0 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen">
+    <!-- Máscara de fundo da modal -->
+    <div class="modal-overlay fixed inset-0 bg-black opacity-50" onclick="closeModal()"></div>
+
+    <!-- Conteúdo da modal -->
+    <div class="modal-container bg-white w-1/2 rounded-lg z-10">
+      <div class="modal-header flex justify-end pr-4 pt-2">
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body p-4">
+        <!-- Conteúdo da modal -->
+        <p>Conteúdo da modal aqui...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  /* Abrir a modal */
+  function openModal() {
+    var modal = document.getElementById('myModal');
+    modal.classList.remove('hidden');
+
+    // Fechar a modal ao clicar fora dela
+    modal.addEventListener('click', function(event) {
+      if (event.target === modal) {
+        closeModal();
+      }
+    });
+  }
+
+  /* Fechar a modal */
+  function closeModal() {
+    var modal = document.getElementById('myModal');
+    modal.classList.add('hidden');
+  }
+</script>
+
+
 </body>
 </html>
