@@ -84,8 +84,8 @@ public class IndexController {
     }
 
     @PostMapping("/home/delete")
-    public String deleteFileHome(@RequestParam("delete") String fileName) {
-        if (fileName != null && !fileName.isEmpty()) storageService.deleteFile(fileName);
+    public String deleteFileHome(@RequestParam("delete") String id) {
+        if (id != null && !id.isEmpty()) storageService.deleteFile(id);
         return "redirect:/home";
     }
 
@@ -95,8 +95,7 @@ public class IndexController {
             throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
                     "O arquivo fornecido não é um tipo de áudio suportado.");
         }
-        String urlSong = storageService.uploadFile(file);
-        mongoService.saveSongMongo(urlSong, file);
+        storageService.uploadFile(file);
         return "redirect:/home";
     }
 

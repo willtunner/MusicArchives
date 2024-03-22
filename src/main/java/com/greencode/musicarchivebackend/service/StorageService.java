@@ -4,6 +4,7 @@ import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
+import com.greencode.musicarchivebackend.repository.SongRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,10 @@ public class StorageService {
     private String bucketName;
     @Autowired
     private AmazonS3 s3Client;
+    @Autowired
+    private MongoService mongoService;
+    @Autowired
+    private SongRepository songRepository;
 
     public String uploadFile(MultipartFile file) {
         int oneHour = 3600000;
@@ -40,11 +45,12 @@ public class StorageService {
 
         try {
             s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObject));
+            mongoService.saveSongMongo(presignedUrl.toString(), file, fileName);
             return presignedUrl.toString();
         } finally {
-            // Exclui o arquivo localmente após o upload para o S3, independentemente de ocorrer uma exceção ou não
-            if (fileObject.exists()) {
-                fileObject.delete();
+            boolean deleted = fileObject.delete();
+            if (!deleted) {
+                System.err.println("Falha ao excluir o arquivo local: " + fileObject.getAbsolutePath());
             }
         }
     }
@@ -61,8 +67,11 @@ public class StorageService {
         return null;
     }
 
-    public String deleteFile(String fileName) {
+    public String deleteFile(String songId) {
+        String fileName = songRepository.findById(songId).get().getFileName();
+        songRepository.deleteById(songId);
         s3Client.deleteObject(bucketName, fileName);
+        System.out.println(fileName + " removed ...");
         return fileName + " removed ...";
     }
 

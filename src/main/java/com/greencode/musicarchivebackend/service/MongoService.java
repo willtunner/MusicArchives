@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -19,12 +21,10 @@ import java.util.List;
 public class MongoService {
     @Autowired
     private SongRepository songRepository;
-    @Autowired
-    private  StorageService storageService;
 
-    public void saveSongMongo(String urlSong, MultipartFile file) {
+    public void saveSongMongo(String urlSong, MultipartFile file, String fileName) {
         int durationSeconds = 0;
-        File fileObject = storageService.convertMultiPartFileToFile(file);
+        File fileObject = convertMultiPartFileToFile(file);
 
         Song song = new Song();
         song.setUrlSong(urlSong);
@@ -43,7 +43,7 @@ public class MongoService {
 
         }
         song.setTitle(file.getOriginalFilename());
-        song.setFileName(file.getOriginalFilename());
+        song.setFileName(fileName);
         songRepository.save(song);
 
     }
@@ -56,5 +56,15 @@ public class MongoService {
 
     public List<Song> getSongs() {
         return songRepository.findAll();
+    }
+
+    public File convertMultiPartFileToFile(MultipartFile file) {
+        File convertedFile = new File(file.getOriginalFilename());
+        try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
+            fos.write(file.getBytes());
+        } catch (IOException e) {
+            log.error("Error converting multipartFile to file", e);
+        }
+        return convertedFile;
     }
 }
