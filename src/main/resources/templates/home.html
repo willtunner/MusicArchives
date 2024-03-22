@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
-  <title>Music 4 All | BandBridge</title>
+<!--  <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}" />-->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <title>🎸Music 4 All | BandBridge🎸</title>
 
   <script>
     function validateFile() {
@@ -66,14 +68,14 @@
     </tr>
     </thead>
 
-    <tbody class="divide-y divide-gray-200">
+    <tbody class="divide-y divide-gray-200 text-center">
     <tr th:if="${#lists.isEmpty(objectIndexList)}">
-      <td colspan="3" class="px-6 py-4 whitespace-nowrap text-center">
+      <td colspan="6" class="px-6 py-4 whitespace-nowrap text-center">
         <p>Não há registros</p>
       </td>
     </tr>
     <tr th:each="objectIndex : ${objectIndexList}">
-      <td th:text="${objectIndex.fileNameRefactor}" class="px-6 py-4 whitespace-nowrap text-center" style="color: #000">NAME_HERE</td>
+      <td th:text="${objectIndex.title}" class="px-6 py-4 whitespace-nowrap text-center" style="color: #000">NAME_HERE</td>
       <td class="px-6 py-4 whitespace-nowrap" style="text-align: -webkit-center;">
         <audio controls class="text-center">
           <source th:src="${objectIndex.urlSong}" type="audio/mpeg">
@@ -82,7 +84,7 @@
       </td>
       <td class="text-center">
         <form th:action="@{/home/delete}" method="post">
-          <input type="hidden" th:name="delete" th:value="${objectIndex.fileName}" />
+          <input type="hidden" th:name="delete" th:value="${objectIndex.title}" />
           <button type="submit" class="py-2 px-3 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4
                         focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-900">
             X
@@ -91,9 +93,9 @@
       </td>
       <td colspan="3" class="text-center">
         <div class="flex justify-center">
-          <!-- Ícone do Olho usando Feather Icons -->
           <div style="width: 50px" class="flex justify-center bg-white-200 hover:bg-green-200 transition-colors
-                duration-300 ease-in-out cursor-pointer rounded-lg" onclick="openModal()">
+                duration-300 ease-in-out cursor-pointer rounded-lg" th:attr="data-id=${objectIndex.id}"
+               onclick="openModal(this.getAttribute('data-id'))">
             <svg fill="#000000" height="30px" width="30px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                  viewBox="0 0 42 42" enable-background="new 0 0 42 42" xml:space="preserve">
             <path d="M15.3,20.1c0,3.1,2.6,5.7,5.7,5.7s5.7-2.6,5.7-5.7s-2.6-5.7-5.7-5.7S15.3,17,15.3,20.1z M23.4,32.4
@@ -114,13 +116,18 @@
     <div class="modal-overlay fixed inset-0 bg-black opacity-50" onclick="closeModal()"></div>
 
     <!-- Conteúdo da modal -->
-    <div class="modal-container bg-white w-1/2 rounded-lg z-10">
+    <div class="modal-container bg-white w-1/4 rounded-lg z-10">
       <div class="modal-header flex justify-end pr-4 pt-2">
         <button class="modal-close" onclick="closeModal()">&times;</button>
       </div>
       <div class="modal-body p-4">
         <!-- Conteúdo da modal -->
-        <p>Conteúdo da modal aqui...</p>
+        <!-- Campos do modal -->
+        <p id="modalNome"></p>
+        <p id="modalArtista"></p>
+        <p id="modalDuracao"></p>
+        <p id="modalFavorita"></p>
+        <p id="modalUrl"></p>
       </div>
     </div>
   </div>
@@ -128,16 +135,51 @@
 
 <script th:inline="javascript">
   /* Abrir a modal */
-  function openModal() {
-    var modal = document.getElementById('myModal');
-    modal.classList.remove('hidden');
+  function openModal(musicId) {
+      // Fazer uma solicitação AJAX para buscar os detalhes da música
+    fetch('http://localhost:8081/api/songs/' + musicId)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Não foi possível buscar os detalhes da música.');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Aqui você pode manipular os dados da música, por exemplo, exibindo-os na modal
+        console.log('Detalhes da música:', data);
+        // Em vez de apenas logar os detalhes da música, você pode manipular a modal aqui
 
-    // Fechar a modal ao clicar fora dela
-    modal.addEventListener('click', function(event) {
-      if (event.target === modal) {
-        closeModal();
-      }
-    });
+        // Preencher os campos do modal com os dados da música
+        document.getElementById('modalNome').innerText = 'Nome: ' + data.title;
+        document.getElementById('modalArtista').innerText = 'Artista: ' + data.artist;
+        document.getElementById('modalDuracao').innerText = 'Duração: ' + data.duration;
+        document.getElementById('modalFavorita').innerText = 'Favorita: ' + data.favorited;
+        //document.getElementById('modalUrl').innerText = 'Url: ' + data.urlSong;
+
+        // Formata a URL da música como um link clicável
+        var urlMusica = "Link da música";
+        var linkMusica = document.createElement('a');
+        linkMusica.href = data.urlSong;
+        linkMusica.textContent = urlMusica;
+        linkMusica.target = "_blank"; // Abre o link em uma nova aba
+        linkMusica.classList.add("cursor-pointer", "text-blue-500", "underline");
+        var divUrl = document.getElementById('modalUrl');
+        divUrl.innerHTML = "<b>URL: </b>";
+        divUrl.appendChild(linkMusica);
+
+        var modal = document.getElementById('myModal');
+        modal.classList.remove('hidden');
+
+        // Fechar a modal ao clicar fora dela
+        modal.addEventListener('click', function(event) {
+          if (event.target === modal) {
+            closeModal();
+          }
+        });
+      })
+      .catch(error => {
+        console.error('Erro ao buscar os detalhes da música:', error);
+      });
   }
 
   /* Fechar a modal */

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -42,7 +43,7 @@ public class MongoService {
 
         }
         song.setTitle(file.getOriginalFilename());
-
+        song.setFileName(file.getOriginalFilename());
         songRepository.save(song);
 
     }
@@ -51,5 +52,9 @@ public class MongoService {
         int minutes = durationSeconds / 60;
         int seconds = durationSeconds % 60;
         return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    public List<Song> getSongs() {
+        return songRepository.findAll();
     }
 }

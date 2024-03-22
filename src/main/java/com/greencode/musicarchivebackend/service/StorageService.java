@@ -1,5 +1,6 @@
 package com.greencode.musicarchivebackend.service;
 
+import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
@@ -12,6 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,11 +27,26 @@ public class StorageService {
     private AmazonS3 s3Client;
 
     public String uploadFile(MultipartFile file) {
+        int oneHour = 3600000;
+        Date expiration = new Date(System.currentTimeMillis() + oneHour);
+
         String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
         File fileObject = convertMultiPartFileToFile(file);
-        s3Client.putObject(new PutObjectRequest(bucketName, fileName,fileObject ));
-        fileObject.delete();
-        return getFileUrl(fileName, bucketName);
+
+        GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest("musicarchives", fileName)
+                .withMethod(HttpMethod.GET)
+                .withExpiration(expiration);
+        URL presignedUrl = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
+
+        try {
+            s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObject));
+            return presignedUrl.toString();
+        } finally {
+            // Exclui o arquivo localmente após o upload para o S3, independentemente de ocorrer uma exceção ou não
+            if (fileObject.exists()) {
+                fileObject.delete();
+            }
+        }
     }
 
     public byte[] downloadFile(String fileName) {

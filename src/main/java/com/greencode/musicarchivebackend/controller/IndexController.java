@@ -3,8 +3,12 @@ package com.greencode.musicarchivebackend.controller;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.greencode.musicarchivebackend.model.Song;
 import com.greencode.musicarchivebackend.service.MongoService;
 import com.greencode.musicarchivebackend.service.StorageService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,33 +40,40 @@ public class IndexController {
     }
 
     @GetMapping("home")
+    @Operation(summary = "Get all songs details", description = "Gets details of an all song in the music4all")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Song details retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Song not found"),
+            @ApiResponse(responseCode = "403", description = "Expire link in S3")
+    })
     public String getHomepage(Model model) {
         int oneHour = 3600000;
         Date expiration = new Date(System.currentTimeMillis() + oneHour);
         List<String> urlSongs = new ArrayList<>();
         List<String> fileNames = storageService.getSongFileNames();
-        List<ObjectIndex> objectIndexList = new ArrayList<>();
-
-        fileNames.forEach(s -> {
-          GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest("musicarchives", s)
-                    .withMethod(HttpMethod.GET)
-                    .withExpiration(expiration);
-            URL presignedUrl = amazonS3.generatePresignedUrl(generatePresignedUrlRequest);
-            System.out.println(presignedUrl);
-            urlSongs.add(presignedUrl.toString());
-        });
-
-        if (fileNames.size() == urlSongs.size()) {
-            for (int i =0; i < fileNames.size(); i++) {
-                ObjectIndex objectIndex = new ObjectIndex();
-                String nameRefactor = fileNames.get(i).substring(fileNames.get(i).indexOf("_") + 1, fileNames.get(i).lastIndexOf("."));
-                objectIndex.setFileNameRefactor(nameRefactor);
-                objectIndex.setFileName(fileNames.get(i));
-                objectIndex.setUrlSong(urlSongs.get(i));
-                objectIndexList.add(objectIndex);
-            }
-        }
-        model.addAttribute("objectIndexList", objectIndexList);
+//        List<ObjectIndex> objectIndexList = new ArrayList<>();
+//
+//        fileNames.forEach(fileName -> {
+//          GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest("musicarchives", fileName)
+//                    .withMethod(HttpMethod.GET)
+//                    .withExpiration(expiration);
+//            URL presignedUrl = amazonS3.generatePresignedUrl(generatePresignedUrlRequest);
+//            System.out.println(presignedUrl);
+//            urlSongs.add(presignedUrl.toString());
+//        });
+//
+//        if (fileNames.size() == urlSongs.size()) {
+//            for (int i =0; i < fileNames.size(); i++) {
+//                ObjectIndex objectIndex = new ObjectIndex();
+//                String nameRefactor = fileNames.get(i).substring(fileNames.get(i).indexOf("_") + 1, fileNames.get(i).lastIndexOf("."));
+//                objectIndex.setFileNameRefactor(nameRefactor);
+//                objectIndex.setFileName(fileNames.get(i));
+//                objectIndex.setUrlSong(urlSongs.get(i));
+//                objectIndexList.add(objectIndex);
+//            }
+//        }
+        List<Song> songs = mongoService.getSongs();
+        model.addAttribute("objectIndexList", songs);
         return "home";
     }
 
