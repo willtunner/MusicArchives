@@ -4,9 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
-<!--  <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}" />-->
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  <title>🎸Music 4 All | BandBridge🎸</title>
+  <title>🎸 Music Archive 🎸</title>
 
   <script>
     function validateFile() {
@@ -25,17 +24,11 @@
 
         return true; // Envie o formulário se a validação passar
     }
-
-
-
-  </script>
+</script>
 
   <script>
     function openModal() {
-      // Seleciona a modal pelo ID
       var modal = document.getElementById('myModal');
-
-      // Define o estilo display da modal como "block" para mostrá-la
       modal.style.display = "block";
   }
   </script>
@@ -112,17 +105,13 @@
 
 <div id="myModal" class="modal hidden fixed inset-0 overflow-y-auto">
   <div class="flex items-center justify-center min-h-screen">
-    <!-- Máscara de fundo da modal -->
     <div class="modal-overlay fixed inset-0 bg-black opacity-50" onclick="closeModal()"></div>
 
-    <!-- Conteúdo da modal -->
     <div class="modal-container bg-white w-1/4 rounded-lg z-10">
       <div class="modal-header flex justify-end pr-4 pt-2">
         <button class="modal-close" onclick="closeModal()">&times;</button>
       </div>
       <div class="modal-body p-4">
-        <!-- Conteúdo da modal -->
-        <!-- Campos do modal -->
         <p id="modalNome"></p>
         <p id="modalArtista"></p>
         <p id="modalDuracao"></p>
