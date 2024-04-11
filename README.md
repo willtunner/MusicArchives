@@ -1,6 +1,6 @@
 ## Imagens do projeto
 ### Tamanho web
-![](src/images/web1.jpg)
+![](/src/images/img.png)
 
 ### Tamanho Tablet
 ![](src/images/tablet.jpg)
