@@ -2,16 +2,19 @@
 
 > A simple API where you can upload music, storing it on Amazon S3 and saving information in MongoDB.
 
-## Project images
+# Project images
 <div align="center">
   <img src="/src/images/img.png" width="30%">
   <img src="/src/images/img_1.png" width="30%">
   <img src="/src/images/img_2.png" width="30%">
 </div>
 
-```bash
-- Start project
-- http://localhost:8081/home
+## Instalation
+
+```ini
+  - Configure your Amazon S3 and MongoDB credentials in the `application.properties` file.
+  - Start project
+  - http://localhost:8081/home
 ```
 
 [//]: # (> **Note**: The script will build the project before running it, and it'll start the containers for the database using `docker compose up -d`.Note**: The script will build the project before running it, and it'll start the containers for the database using `docker compose up -d`.)
