@@ -1,8 +1,6 @@
 package com.greencode.musicarchivebackend.controller;
 
-import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.greencode.musicarchivebackend.model.Song;
 import com.greencode.musicarchivebackend.service.MongoService;
 import com.greencode.musicarchivebackend.service.StorageService;
@@ -74,8 +72,6 @@ public class IndexController {
     }
 
 }
-
-
 
 class ObjectIndex {
     private String fileName;

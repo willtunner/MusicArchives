@@ -49,7 +49,7 @@ public class StorageController {
     }
 
     @DeleteMapping("/delete/{fileName}")
-    @Operation(summary = "Delete an song", description = "Delete an song from the music4all by fileName.")
+    @Operation(summary = "Delete an song by name", description = "Delete an song from the music4all by fileName.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Song deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Song not found")
