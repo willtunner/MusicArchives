@@ -22,7 +22,7 @@ public class MongoService {
     @Autowired
     private SongRepository songRepository;
 
-    public void saveSongMongo(String urlSong, MultipartFile file, String fileName) {
+    public Song saveSongMongo(String urlSong, MultipartFile file, String fileName) {
         int durationSeconds = 0;
         File fileObject = convertMultiPartFileToFile(file);
 
@@ -34,7 +34,6 @@ public class MongoService {
             Tag tag = audioFile.getTag();
             String artist = tag.getFirst(FieldKey.ARTIST);
             song.setArtist(artist);
-
             durationSeconds = audioFile.getAudioHeader().getTrackLength();
             String duration = secondsToMinutes(durationSeconds);
             song.setDuration(duration);
@@ -44,7 +43,7 @@ public class MongoService {
         }
         song.setTitle(file.getOriginalFilename());
         song.setFileName(fileName);
-        songRepository.save(song);
+       return songRepository.save(song);
 
     }
 

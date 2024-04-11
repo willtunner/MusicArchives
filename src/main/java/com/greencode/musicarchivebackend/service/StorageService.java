@@ -4,6 +4,7 @@ import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
+import com.greencode.musicarchivebackend.model.Song;
 import com.greencode.musicarchivebackend.repository.SongRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class StorageService {
     @Autowired
     private SongRepository songRepository;
 
-    public String uploadFile(MultipartFile file) {
+    public Song uploadFile(MultipartFile file) {
         int oneHour = 3600000;
         Date expiration = new Date(System.currentTimeMillis() + oneHour);
 
@@ -45,8 +46,8 @@ public class StorageService {
 
         try {
             s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObject));
-            mongoService.saveSongMongo(presignedUrl.toString(), file, fileName);
-            return presignedUrl.toString();
+
+            return mongoService.saveSongMongo(presignedUrl.toString(), file, fileName);
         } finally {
             boolean deleted = fileObject.delete();
             if (!deleted) {
@@ -84,7 +85,6 @@ public class StorageService {
         }
         return convertedFile;
     }
-
 
     public List<String> getSongFileNames() {
         ListObjectsV2Result result = s3Client.listObjectsV2("musicarchives");

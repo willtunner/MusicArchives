@@ -1,5 +1,6 @@
 package com.greencode.musicarchivebackend.controller;
 
+import com.greencode.musicarchivebackend.model.Song;
 import com.greencode.musicarchivebackend.service.StorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -26,7 +27,7 @@ public class StorageController {
             @ApiResponse(responseCode = "201", description = "Song created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
-    public ResponseEntity<String> uploadFile(@RequestParam(value = "file") MultipartFile file) {
+    public ResponseEntity<Song> uploadFile(@RequestParam(value = "file") MultipartFile file) {
         return new ResponseEntity<>(service.uploadFile(file), HttpStatus.OK);
     }
 

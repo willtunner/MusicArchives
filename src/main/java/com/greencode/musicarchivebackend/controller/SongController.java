@@ -2,6 +2,7 @@ package com.greencode.musicarchivebackend.controller;
 
 import com.greencode.musicarchivebackend.model.Song;
 import com.greencode.musicarchivebackend.repository.SongRepository;
+import com.greencode.musicarchivebackend.service.SongService;
 import com.greencode.musicarchivebackend.service.StorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,10 +23,12 @@ import java.util.Optional;
 public class SongController {
     private final StorageService storageService;
     private final SongRepository songRepository;
+    private final SongService songService;
 
-    public SongController(StorageService storageService, SongRepository songRepository) {
+    public SongController(StorageService storageService, SongRepository songRepository, SongService songService) {
         this.storageService = storageService;
         this.songRepository = songRepository;
+        this.songService = songService;
     }
 
     @GetMapping
@@ -35,7 +38,7 @@ public class SongController {
             @ApiResponse(responseCode = "404", description = "Song not found")
     })
     public ResponseEntity<List<Song>> getSongs() {
-        return ResponseEntity.ok(songRepository.findAll());
+        return ResponseEntity.ok(songService.getSongs());
     }
 
     @GetMapping("{id}")
@@ -45,13 +48,9 @@ public class SongController {
             @ApiResponse(responseCode = "404", description = "Song not found")
     })
     public ResponseEntity<Song> getSong(@PathVariable String id) {
-        Optional<Song> song = songRepository.findById(id);
+        Optional<Song> song = songService.getSongById(id);
 
-        if (song.isPresent()) {
-            return  ResponseEntity.ok(song.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return song.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -60,15 +59,13 @@ public class SongController {
             @ApiResponse(responseCode = "201", description = "Song created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
-    public ResponseEntity<?> createSong(@RequestParam(value = "file") MultipartFile file, Song song) {
-        if (songRepository.existsByFileNameEquals(song.getFileName()) || songRepository.existsByTitleEquals(song.getTitle())) {
-            return ResponseEntity.badRequest().body("taken");
+    public ResponseEntity<?> createSong(@RequestParam(value = "file") MultipartFile file) {
+        if (songService.isExist(file.getName(), file.getOriginalFilename())) {
+            return ResponseEntity.badRequest().body("There is already a file with that name.");
         } else {
             System.out.println("Uploading the file...");
-            storageService.uploadFile(file);
-            song.setFileName(file.getOriginalFilename());
-            Song insertedSong = songRepository.insert(song);
-            return new ResponseEntity<>(insertedSong, HttpStatus.CREATED);
+            Song song = storageService.uploadFile(file);
+            return new ResponseEntity<>(song, HttpStatus.CREATED);
         }
     }
 
@@ -79,7 +76,7 @@ public class SongController {
             @ApiResponse(responseCode = "404", description = "Song not found")
     })
     public ResponseEntity<Song> updateSong(@PathVariable String id, @ModelAttribute Song songData) {
-        Optional<Song> songOptional = songRepository.findById(id);
+        Optional<Song> songOptional = songService.getSongById(id);
 
         if (songOptional.isPresent()) {
             Song song = songOptional.get();
