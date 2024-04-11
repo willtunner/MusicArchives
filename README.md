@@ -2,7 +2,7 @@
 
 > A simple API where you can upload music, storing it on Amazon S3 and saving information in MongoDB.
 
-## Imagens do projeto
+## Project images
 <div align="center">
   <img src="/src/images/img.png" width="30%">
   <img src="/src/images/img_1.png" width="30%">
