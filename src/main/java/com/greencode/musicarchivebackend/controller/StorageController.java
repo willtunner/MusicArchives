@@ -2,6 +2,7 @@ package com.greencode.musicarchivebackend.controller;
 
 import com.greencode.musicarchivebackend.model.Song;
 import com.greencode.musicarchivebackend.service.StorageService;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/file")
 @CrossOrigin(origins = "*")
 @Tag(name = "Storage Controller", description = "Operations related to storage file system and file upload/download/delete file operations")
+@Hidden
 public class StorageController {
     @Autowired
     private StorageService service;
