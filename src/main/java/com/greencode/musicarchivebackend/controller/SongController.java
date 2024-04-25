@@ -69,17 +69,18 @@ public class SongController {
         }
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{id}")
     @Operation(summary = "Update an song", description = "Updates an existing song in the music4all by ID.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Song updated successfully"),
             @ApiResponse(responseCode = "404", description = "Song not found")
     })
-    public ResponseEntity<Song> updateSong(@PathVariable String id, @ModelAttribute Song songData) {
+    public ResponseEntity<Song> updateSong(@PathVariable String id, @RequestBody Song songData) {
         Optional<Song> songOptional = songService.getSongById(id);
 
         if (songOptional.isPresent()) {
             Song song = songOptional.get();
+            if (songData.getFileName() != null) song.setFileName(songData.getFileName());
             if (songData.getTitle() != null) song.setTitle(songData.getTitle());
             if (songData.getArtist() != null) song.setArtist(songData.getArtist());
             song.setFavorited(songData.isFavorited());

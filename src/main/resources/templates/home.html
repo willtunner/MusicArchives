@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  <title>🎸 Music Archive 🎸</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}" />
+  <title>Music Archive</title>
 
   <script>
     function validateFile() {
@@ -32,6 +33,7 @@
       modal.style.display = "block";
   }
   </script>
+
 </head>
 
 <body class="bg-gray-800">
@@ -56,6 +58,7 @@
     <tr>
       <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Nome da musica</th>
       <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Play</th>
+      <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">View</th>
       <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Deletar</th>
       <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Visualizar</th>
     </tr>
@@ -67,13 +70,22 @@
         <p>Não há registros</p>
       </td>
     </tr>
-    <tr th:each="objectIndex : ${objectIndexList}">
-      <td th:text="${objectIndex.title}" class="px-6 py-4 whitespace-nowrap text-center" style="color: #000">NAME_HERE</td>
+    <tr th:each="objectIndex, index : ${objectIndexList}">
+      <td th:text="${objectIndex.fileName}" class="px-6 py-4 whitespace-nowrap text-center" style="color: #000">NAME_HERE</td>
       <td class="px-6 py-4 whitespace-nowrap" style="text-align: -webkit-center;">
-        <audio controls class="text-center">
+        <audio controls class="text-center" onplay="audioPlay()" onpause="audioPause()" id="audioElement">
           <source th:src="${objectIndex.urlSong}" type="audio/mpeg">
-          Your browser does not support audio element
         </audio>
+      </td>
+      <td class="text-center">
+        <div class="master_play">
+          <div class="wave">
+            <div class="wave1"></div>
+            <div class="wave1"></div>
+            <div class="wave1"></div>
+            <div class="wave1"></div>
+          </div>
+        </div>
       </td>
       <td class="text-center">
         <form th:action="@{/home/delete}" method="post">
@@ -107,22 +119,56 @@
   <div class="flex items-center justify-center min-h-screen">
     <div class="modal-overlay fixed inset-0 bg-black opacity-50" onclick="closeModal()"></div>
 
-    <div class="modal-container bg-white w-1/4 rounded-lg z-10">
-      <div class="modal-header flex justify-end pr-4 pt-2">
-        <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div class="modal-container bg-white  rounded-lg z-10" style="width: 500px;">
+      <div class="modal-header bg-gray-800 flex justify-end pr-4 pt-2">
+        <button class="modal-close text-white font-bold" onclick="closeModal()">X</button>
       </div>
+
       <div class="modal-body p-4">
-        <p id="modalNome"></p>
-        <p id="modalArtista"></p>
-        <p id="modalDuracao"></p>
-        <p id="modalFavorita"></p>
-        <p id="modalUrl"></p>
+        <div style="display: flex;" class="pb-5">
+          <label style="width: 150px;">Habilitar edição:</label>
+          <input type="checkbox" id="habilitarEdicao" onchange="toggleInputs()">
+        </div>
+        <input type="text" th:value="${idInput}" id="idInput" style="visibility: hidden;" >
+
+        <div style="display: flex;     margin-bottom: 5px;">
+          <label style="width: 80px;">Nome:</label>
+          <input type="text" th:value="${nome}" id="nomeInput" style="border: solid 1px; padding-left: 10px;" disabled>
+        </div>
+        <div style="display: flex;     margin-bottom: 5px;">
+          <label style="width: 80px;">Artista:</label>
+          <input type="text" id="artistaInput" th:value="${artista}" style="border: solid 1px; padding-left: 10px;" disabled>
+        </div>
+        <div style="display: flex;     margin-bottom: 5px;">
+          <label style="width: 80px;">Duração:</label>
+          <input type="text" id="duracaoInput" th:value="${duracao}" style="border: solid 1px; padding-left: 10px;" disabled>
+        </div>
+        <div style="display: flex;     margin-bottom: 5px;">
+          <label style="width: 80px;">Favorita:</label>
+          <input type="checkbox" id="favoritaCheckbox" th:checked="${favorita}" disabled>
+        </div>
+        <div style="display: flex;">
+          <label style="width: 80px;">URL:</label>
+          <a id="urlLink" th:href="${url}" onclick="downloadFile(this.getAttribute('th:href'))" >Download</a>
+        </div>
+       </div>
+
+      <div class="modal-header bg-gray-800 flex justify-center pr-4 pt-2 pb-2" >
+        <!-- Botão Salvar -->
+        <button class="modal-button bg-green-500 hover:bg-green-600 text-white font-bold px-4 py-2 mr-2" onclick="saveChanges()">Salvar</button>
+        <!-- Botão Limpar -->
+        <button class="modal-button bg-blue-300 hover:bg-blue-400 text-white font-bold px-4 py-2 mr-2" onclick="clearFields()">Limpar</button>
+        <!-- Botão Excluir -->
+        <button class="modal-button bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2" onclick="deleteRecord()">Excluir</button>
       </div>
     </div>
   </div>
 </div>
 
 <script th:inline="javascript">
+<!-- Botão play -->
+let masterPlay = document.getElementById('masterPlay');
+
   /* Abrir a modal */
   function openModal(musicId) {
       // Fazer uma solicitação AJAX para buscar os detalhes da música
@@ -138,23 +184,27 @@
         console.log('Detalhes da música:', data);
         // Em vez de apenas logar os detalhes da música, você pode manipular a modal aqui
 
-        // Preencher os campos do modal com os dados da música
-        document.getElementById('modalNome').innerText = 'Nome: ' + data.title;
-        document.getElementById('modalArtista').innerText = 'Artista: ' + data.artist;
-        document.getElementById('modalDuracao').innerText = 'Duração: ' + data.duration;
-        document.getElementById('modalFavorita').innerText = 'Favorita: ' + data.favorited;
-        //document.getElementById('modalUrl').innerText = 'Url: ' + data.urlSong;
+        document.getElementById('idInput').value = data.id;
+        document.getElementById('nomeInput').value = data.fileName;
+        document.getElementById('artistaInput').value = data.artist;
+        document.getElementById('duracaoInput').value = data.duration;
+        document.getElementById('favoritaCheckbox').checked = data.favorited;
+        document.getElementById('urlLink').href = data.urlSong;
 
-        // Formata a URL da música como um link clicável
-        var urlMusica = "Link da música";
-        var linkMusica = document.createElement('a');
-        linkMusica.href = data.urlSong;
-        linkMusica.textContent = urlMusica;
-        linkMusica.target = "_blank"; // Abre o link em uma nova aba
-        linkMusica.classList.add("cursor-pointer", "text-blue-500", "underline");
-        var divUrl = document.getElementById('modalUrl');
-        divUrl.innerHTML = "<b>URL: </b>";
-        divUrl.appendChild(linkMusica);
+        var nomeInput = document.getElementById('nomeInput');
+        var artista = document.getElementById('artistaInput');
+        var duracaoInput = document.getElementById('duracaoInput');
+
+        // Verifica se o input está desabilitado
+        if (nomeInput.disabled) {
+          // Define o estilo de fundo para cinza quando o input está desabilitado
+          nomeInput.style.backgroundColor = 'silver';
+          artista.style.backgroundColor = 'silver';
+          duracaoInput.style.backgroundColor = 'silver';
+        } else {
+          nomeInput.style.backgroundColor = 'transparent';
+          artista.style.backgroundColor = 'transparent';
+        }
 
         var modal = document.getElementById('myModal');
         modal.classList.remove('hidden');
@@ -175,6 +225,134 @@
   function closeModal() {
     var modal = document.getElementById('myModal');
     modal.classList.add('hidden');
+    window.location.href = 'http://localhost:8081/home';
+  }
+
+  /* Habilitar edição */
+   function toggleInputs() {
+    // Obtém o estado atual do checkbox
+    var checkbox = document.getElementById('habilitarEdicao');
+    var isChecked = checkbox.checked;
+
+    // Inputs a serem habilitados/desabilitados
+    var nomeInput = document.getElementById('nomeInput');
+    var artistaInput = document.getElementById('artistaInput');
+    var favoritaCheckbox = document.getElementById('favoritaCheckbox');
+
+
+
+    // Habilita ou desabilita os inputs conforme necessário
+    nomeInput.disabled = !isChecked;
+    artistaInput.disabled = !isChecked;
+    favoritaCheckbox.disabled = !isChecked;
+
+    // Habilita ou desabilita os inputs conforme necessário
+    nomeInput.disabled = !isChecked;
+    artistaInput.disabled = !isChecked;
+    favoritaCheckbox.disabled = !isChecked;
+
+    if (nomeInput.disabled) {
+    // Define o estilo de fundo para cinza quando o input está desabilitado
+    nomeInput.style.backgroundColor = 'silver';
+    artistaInput.style.backgroundColor = 'silver';
+    duracaoInput.style.backgroundColor = 'silver';
+    } else {
+      nomeInput.style.backgroundColor = 'transparent';
+      artistaInput.style.backgroundColor = 'transparent';
+    }
+  }
+
+    function saveChanges() {
+    // Obtém os valores dos campos de entrada
+    var id = document.getElementById('idInput').value;
+    var nome = document.getElementById('nomeInput').value;
+    var artista = document.getElementById('artistaInput').value;
+    var favorita = document.getElementById('favoritaCheckbox').checked;
+    var url = document.getElementById('urlLink').href;
+
+        // Constrói o objeto JSON com os dados dos inputs
+    var jsonData = {
+      id: id,
+      fileName: nome,
+      artist: artista,
+      favorited: favorita // Converte para booleano
+    };
+
+        // Envia a requisição PUT para a API
+    fetch('http://localhost:8081/api/songs/' + id, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(jsonData)
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Não foi possível atualizar os dados da música.');
+      }
+      alert("salvo com sucesso");
+      console.log('Dados atualizados com sucesso:', jsonData);
+      closeModal();
+    })
+    .catch(error => {
+      console.error('Erro ao atualizar os dados da música:', error);
+    });
+
+
+    // Imprime os valores no console
+    console.log('ID:', id);
+    console.log('Nome:', nome);
+    console.log('Artista:', artista);
+    console.log('Favorita:', favorita);
+    console.log('Url:', url);
+  }
+
+ /* Limpar campos */
+  function clearFields() {
+    document.getElementById('nomeInput').value = "";
+    document.getElementById('artistaInput').value = "";
+    document.getElementById('favoritaCheckbox').checked = false;
+  }
+
+<!--  Download mp3  -->
+  function downloadFile(url) {
+    var filename = url.substring(url.lastIndexOf('/') + 1);
+    console.log(url);
+    fetch(url)
+        .then(response => response.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+            console.error('Erro ao fazer o download do arquivo:', error);
+        });
+}
+
+<!-- Play animation -->
+  function audioPlay() {
+     var audio = document.getElementById('audioElement');
+     var sourceElement = audio.querySelector('source');
+     const music = new Audio(sourceElement.src);
+    let wave = document.getElementsByClassName('wave')[0]; // Supondo que wave seja a classe do elemento que você deseja controlar
+
+    console.log('Reproduzindo áudio...');
+    wave.classList.add('active2');
+  }
+
+  function audioPause() {
+     var audio = document.getElementById('audioElement');
+     var sourceElement = audio.querySelector('source');
+     const music = new Audio(sourceElement.src);
+    let wave = document.getElementsByClassName('wave')[0]; // Supondo que wave seja a classe do elemento que você deseja controlar
+
+    console.log('Pausando áudio...');
+    wave.classList.remove('active2');
   }
 </script>
 

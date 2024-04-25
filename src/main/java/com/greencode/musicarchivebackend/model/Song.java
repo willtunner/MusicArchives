@@ -16,6 +16,6 @@ public class Song {
     private String artist;
     private String duration;
     private String urlSong;
-    private boolean isFavorited = false;
+    private boolean isFavorited;
 
 }
