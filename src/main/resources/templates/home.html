@@ -58,7 +58,7 @@
     <tr>
       <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Nome da musica</th>
       <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Play</th>
-      <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">View</th>
+      <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider"></th>
       <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Deletar</th>
       <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Visualizar</th>
     </tr>
@@ -73,7 +73,7 @@
     <tr th:each="objectIndex, index : ${objectIndexList}">
       <td th:text="${objectIndex.fileName}" class="px-6 py-4 whitespace-nowrap text-center" style="color: #000">NAME_HERE</td>
       <td class="px-6 py-4 whitespace-nowrap" style="text-align: -webkit-center;">
-        <audio controls class="text-center" onplay="audioPlay()" onpause="audioPause()" id="audioElement">
+        <audio controls class="text-center" th:data-index="${index.index}"  onplay="audioPlay(this)" onpause="audioPause(this)" id="audioElement">
           <source th:src="${objectIndex.urlSong}" type="audio/mpeg">
         </audio>
       </td>
@@ -166,8 +166,6 @@
 </div>
 
 <script th:inline="javascript">
-<!-- Botão play -->
-let masterPlay = document.getElementById('masterPlay');
 
   /* Abrir a modal */
   function openModal(musicId) {
@@ -238,13 +236,6 @@ let masterPlay = document.getElementById('masterPlay');
     var nomeInput = document.getElementById('nomeInput');
     var artistaInput = document.getElementById('artistaInput');
     var favoritaCheckbox = document.getElementById('favoritaCheckbox');
-
-
-
-    // Habilita ou desabilita os inputs conforme necessário
-    nomeInput.disabled = !isChecked;
-    artistaInput.disabled = !isChecked;
-    favoritaCheckbox.disabled = !isChecked;
 
     // Habilita ou desabilita os inputs conforme necessário
     nomeInput.disabled = !isChecked;
@@ -335,24 +326,19 @@ let masterPlay = document.getElementById('masterPlay');
 }
 
 <!-- Play animation -->
-  function audioPlay() {
-     var audio = document.getElementById('audioElement');
-     var sourceElement = audio.querySelector('source');
-     const music = new Audio(sourceElement.src);
-    let wave = document.getElementsByClassName('wave')[0]; // Supondo que wave seja a classe do elemento que você deseja controlar
-
-    console.log('Reproduzindo áudio...');
-    wave.classList.add('active2');
+  function audioPlay(audioElement) {
+     var index = audioElement.getAttribute('data-index');
+     console.log('Reproduzindo áudio...', index);
+     let wave = document.getElementsByClassName('wave')[index]; // Supondo que wave seja a classe do elemento que você deseja controlar
+     wave.classList.add('active2');
   }
 
-  function audioPause() {
-     var audio = document.getElementById('audioElement');
-     var sourceElement = audio.querySelector('source');
-     const music = new Audio(sourceElement.src);
-    let wave = document.getElementsByClassName('wave')[0]; // Supondo que wave seja a classe do elemento que você deseja controlar
+  function audioPause(audioElement) {
+     var index = audioElement.getAttribute('data-index');
+     let wave = document.getElementsByClassName('wave')[index]; // Supondo que wave seja a classe do elemento que você deseja controlar
 
-    console.log('Pausando áudio...');
-    wave.classList.remove('active2');
+     console.log('Pausando áudio...');
+     wave.classList.remove('active2');
   }
 </script>
 
