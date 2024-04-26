@@ -1,0 +1,14 @@
+{
+  "routes": [
+    { "handle": "filesystem" },
+    {
+      "src": "/home",
+      "dest": "http://localhost:8081/home"
+    },
+    {
+      "src": "/(.*)",
+      "status": 301,
+      "headers": { "Location": "https://musicsarchiveswilldev-git-main-willtunners-projects.vercel.app/$1" }
+    }
+  ]
+}
