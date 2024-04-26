@@ -17,13 +17,13 @@ public class CredentialsConfig {
 //    @Value("${spring.data.mongodb.uri}")
 //    private String mongoUri;
 
-    @Value("${AWS_ACCESS_KEY}")
+    @Value("${AWS_ACCESS_KEY1}")
     private String awsAccessKey;
 
-    @Value("${AWS_SECRET_KEY}")
+    @Value("${AWS_SECRET_KEY1}")
     private String awsSecretKey;
 
-    @Value("${MONGO_URI}")
+    @Value("${MONGO_URI1}")
     private String mongoUri;
 
 
