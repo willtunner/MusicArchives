@@ -1,6 +1,7 @@
 # Music Archive
 
-> A simple API where you can upload music, storing it on Amazon S3 and saving information in MongoDB.
+> A simple API where you can create, edit, update and delete music, store it in Amazon S3 and save information in MongoDB.
+Back-end made in Java/Springboot using thymeleaf with tailwind to manage Html5 and Javascript.
 
 # Project images
 <div align="center">
