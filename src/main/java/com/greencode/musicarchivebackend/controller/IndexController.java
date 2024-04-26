@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.List;
 
@@ -47,6 +48,11 @@ public class IndexController {
         List<Song> songs = mongoService.getSongs();
         model.addAttribute("objectIndexList", songs);
         return "home";
+    }
+
+    @GetMapping("/")
+    public RedirectView redirectToHome() {
+        return new RedirectView("/home");
     }
 
     @GetMapping("login")
