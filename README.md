@@ -3,6 +3,9 @@
 > A simple API where you can create, edit, update and delete music, store it in Amazon S3 and save information in MongoDB.
 Back-end made in Java/Springboot using thymeleaf with tailwind to manage Html5 and Javascript.
 
+## URL Project EC2 Amazon
+> http://ec2-18-221-91-181.us-east-2.compute.amazonaws.com:8081/home
+
 # Project images
 <div align="center">
   <img src="/src/images/img.png" width="30%">
